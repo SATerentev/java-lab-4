@@ -1,1 +1,10 @@
-spring.application.name=back
+spring:
+  datasource:
+    url: jdbc:sqlite:C:\Users\MrSam\OneDrive\Рабочий стол\lab 4\src\back\src\main\resources\data.db
+    driver-class-name: org.sqlite.JDBC
+
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
