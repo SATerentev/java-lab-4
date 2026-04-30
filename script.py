@@ -10,13 +10,13 @@ def main():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS questions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                text TEXT,
-                answer1 TEXT,
-                answer2 TEXT,
-                answer3 TEXT,
-                answer4 TEXT,
-                correct_answer INTEGER,
-                grade INTEGER
+                text TEXT NOT NULL,
+                answer1 TEXT NOT NULL,
+                answer2 TEXT NOT NULL,
+                answer3 TEXT NOT NULL,
+                answer4 TEXT NOT NULL,
+                correct_answer INTEGER NOT NULL,
+                grade INTEGER NOT NULL
             )
     ''')
 
