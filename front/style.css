@@ -1,0 +1,230 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: "Manrope", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: radial-gradient(circle at top, #1a2c87 0%, #060b2a 55%);
+    color: #f2f5ff;
+    margin: 0;
+    min-height: 100vh;
+}
+
+#success-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 50;
+    background: radial-gradient(circle, rgba(152, 197, 255, 0.28) 0%, rgba(152, 197, 255, 0) 65%);
+}
+
+#success-flash.show {
+    animation: successFlash 420ms ease-out;
+}
+
+h1,
+#prize-ladder h3 {
+    font-family: "Russo One", "Manrope", sans-serif;
+    letter-spacing: 0.3px;
+}
+
+#index-container,
+#game-container {
+    width: min(760px, 92vw);
+    margin-top: 24px;
+    background: rgba(10, 18, 58, 0.9);
+    border: 1px solid rgba(89, 117, 255, 0.5);
+    border-radius: 16px;
+    padding: 22px;
+    box-sizing: border-box;
+    box-shadow: 0 16px 40px rgba(2, 6, 24, 0.45);
+    backdrop-filter: blur(4px);
+}
+
+#game-container {
+    width: 100%;
+    margin-top: 0;
+}
+
+.game-layout {
+    width: min(1100px, 95vw);
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+    align-items: start;
+}
+
+#status-panel {
+    background: rgba(6, 12, 40, 0.75);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+}
+
+.subtitle {
+    margin-top: -4px;
+    color: #b8c9ff;
+}
+
+.create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.create-form input {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #4258c8;
+    background: #0e1542;
+    color: #f2f5ff;
+}
+
+.answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.create-form button,
+.ans-btn {
+    text-align: left;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #3f5ce0 0%, #2f46b4 100%);
+    color: #ffffff;
+    cursor: pointer;
+    transition: transform .12s ease, background .12s ease;
+    font-weight: 600;
+}
+
+.create-form button {
+    margin-top: 8px;
+    text-align: center;
+}
+
+.create-form button:hover:enabled,
+.ans-btn:hover:enabled {
+    background: linear-gradient(90deg, #5671ef 0%, #3b54c9 100%);
+    transform: translateY(-1px);
+}
+
+.create-form button:disabled,
+.ans-btn:disabled {
+    opacity: .65;
+    cursor: default;
+}
+
+.message {
+    min-height: 24px;
+    font-size: 14px;
+    margin: 10px 0 0;
+}
+
+.message.info {
+    color: #9dc0ff;
+}
+
+.message.error,
+.error-text {
+    color: #ff9797;
+}
+
+.message.success {
+    color: #8cffb2;
+}
+
+.result-card {
+    margin-top: 16px;
+    background: rgba(6, 12, 40, 0.65);
+    border: 1px solid rgba(89, 117, 255, 0.35);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.play-link,
+.home-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #b7c8ff;
+}
+
+#prize-ladder {
+    background: rgba(10, 18, 58, 0.9);
+    border: 1px solid rgba(89, 117, 255, 0.5);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 16px 40px rgba(2, 6, 24, 0.35);
+}
+
+#prize-ladder h3 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+#prize-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.prize-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(6, 12, 40, 0.65);
+    color: #c8d4ff;
+}
+
+.prize-item.active {
+    background: linear-gradient(90deg, #5671ef 0%, #3b54c9 100%);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.prize-item.just-hit {
+    animation: prizePulse 900ms ease;
+}
+
+@keyframes prizePulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(129, 164, 255, 0);
+    }
+    35% {
+        transform: scale(1.04);
+        box-shadow: 0 0 20px rgba(129, 164, 255, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(129, 164, 255, 0);
+    }
+}
+
+@keyframes successFlash {
+    0% {
+        opacity: 0;
+    }
+    35% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@media (max-width: 900px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
+
+    #prize-ladder {
+        order: -1;
+    }
+}

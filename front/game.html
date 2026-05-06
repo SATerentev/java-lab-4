@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Кто хочет стать миллионером?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Russo+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="success-flash" aria-hidden="true"></div>
+    <div class="game-layout">
+        <div id="game-container">
+            <h1>Кто хочет стать миллионером?</h1>
+            
+            <div id="status-panel">
+                <p>Игрок: <span id="playerName">...</span></p>
+                <p>Счет: <span id="score">0</span></p>
+                <p>Несгораемая сумма: <span id="safeAmount">0</span></p>
+            </div>
+
+            <p id="message" class="message"></p>
+
+            <div id="question-section">
+                <h2 id="questionText">Загрузка вопроса...</h2>
+                <div class="answers-grid">
+                    <button class="ans-btn" data-answer="1" id="ans1"></button>
+                    <button class="ans-btn" data-answer="2" id="ans2"></button>
+                    <button class="ans-btn" data-answer="3" id="ans3"></button>
+                    <button class="ans-btn" data-answer="4" id="ans4"></button>
+                </div>
+            </div>
+
+            <div id="game-over" style="display: none;">
+                <h2>Игра окончена</h2>
+                <p id="final-result"></p>
+                <p id="correct-answers-result"></p>
+                <a class="home-link" href="index.html">Начать заново</a>
+            </div>
+        </div>
+
+        <div id="prize-ladder">
+            <h3>Таблица выигрышей</h3>
+            <ul id="prize-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8080/api";
+        const PRIZE_TABLE = [
+            0,
+            500,
+            1000,
+            2000,
+            3000,
+            5000,
+            10000,
+            15000,
+            25000,
+            50000,
+            100000,
+            200000,
+            400000,
+            800000,
+            1500000,
+            3000000
+        ];
+        const params = new URLSearchParams(window.location.search);
+        const gameId = params.get("gameId");
+        const messageEl = document.getElementById("message");
+        const questionSectionEl = document.getElementById("question-section");
+        const gameOverEl = document.getElementById("game-over");
+        const questionTextEl = document.getElementById("questionText");
+        const answerButtons = Array.from(document.querySelectorAll(".ans-btn"));
+        const prizeListEl = document.getElementById("prize-list");
+        let previousScore = null;
+        let audioCtx = null;
+
+        function formatMoney(value) {
+            return Number(value).toLocaleString("ru-RU");
+        }
+
+        function getAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+
+        function beep({ freq = 440, duration = 0.12, type = "sine", gain = 0.045, delay = 0 }) {
+            try {
+                const ctx = getAudioCtx();
+                const now = ctx.currentTime + delay;
+                const osc = ctx.createOscillator();
+                const amp = ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, now);
+                amp.gain.setValueAtTime(0.0001, now);
+                amp.gain.exponentialRampToValueAtTime(gain, now + 0.015);
+                amp.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+                osc.connect(amp);
+                amp.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + duration + 0.02);
+            } catch (_) {
+                // Audio can be blocked by browser policy until first interaction.
+            }
+        }
+
+        function playCorrectSound() {
+            beep({ freq: 660, duration: 0.08, type: "triangle", gain: 0.04, delay: 0 });
+            beep({ freq: 880, duration: 0.09, type: "triangle", gain: 0.04, delay: 0.09 });
+            beep({ freq: 1100, duration: 0.1, type: "triangle", gain: 0.04, delay: 0.18 });
+        }
+
+        function playLoseSound() {
+            beep({ freq: 320, duration: 0.12, type: "sawtooth", gain: 0.04, delay: 0 });
+            beep({ freq: 240, duration: 0.14, type: "sawtooth", gain: 0.04, delay: 0.11 });
+            beep({ freq: 180, duration: 0.16, type: "sawtooth", gain: 0.035, delay: 0.23 });
+        }
+
+        function playWinSound() {
+            beep({ freq: 784, duration: 0.1, type: "triangle", gain: 0.042, delay: 0 });
+            beep({ freq: 988, duration: 0.11, type: "triangle", gain: 0.042, delay: 0.1 });
+            beep({ freq: 1318, duration: 0.12, type: "triangle", gain: 0.042, delay: 0.22 });
+            beep({ freq: 1568, duration: 0.16, type: "triangle", gain: 0.045, delay: 0.35 });
+        }
+
+        function renderPrizeLadder(currentScore) {
+            prizeListEl.innerHTML = "";
+            const scoreValue = Number(currentScore || 0);
+            const shouldAnimate = previousScore !== null && scoreValue > previousScore;
+
+            for (let i = PRIZE_TABLE.length - 1; i >= 0; i--) {
+                const li = document.createElement("li");
+                li.className = "prize-item";
+                if (PRIZE_TABLE[i] === scoreValue) {
+                    li.classList.add("active");
+                    if (shouldAnimate) {
+                        li.classList.add("just-hit");
+                    }
+                }
+                li.textContent = `${i}. ${formatMoney(PRIZE_TABLE[i])}`;
+                prizeListEl.appendChild(li);
+            }
+
+            previousScore = scoreValue;
+        }
+
+        function playSuccessFlash() {
+            const flashEl = document.getElementById("success-flash");
+            flashEl.classList.remove("show");
+            void flashEl.offsetWidth;
+            flashEl.classList.add("show");
+        }
+
+        function setMessage(text, type = "info") {
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+        }
+
+        function setAnswerButtonsEnabled(enabled) {
+            answerButtons.forEach((button) => {
+                button.disabled = !enabled;
+            });
+        }
+
+        async function readErrorMessage(response) {
+            try {
+                return await response.text();
+            } catch (_) {
+                return "Неизвестная ошибка";
+            }
+        }
+
+        if (!gameId) {
+            alert("ID игры не найден");
+            window.location.href = "index.html";
+        }
+
+        async function refreshGame() {
+            try {
+                const gameRes = await fetch(`${API_BASE}/game/${gameId}`);
+                if (!gameRes.ok) {
+                    const reason = await readErrorMessage(gameRes);
+                    throw new Error(reason || "Не удалось получить состояние игры");
+                }
+                const gameData = await gameRes.json();
+
+                document.getElementById("playerName").textContent = gameData.playerName;
+                document.getElementById("score").textContent = formatMoney(gameData.score);
+                document.getElementById("safeAmount").textContent = formatMoney(gameData.safeAmount);
+                const oldScore = previousScore;
+                renderPrizeLadder(gameData.score);
+                if (oldScore !== null && Number(gameData.score) > oldScore) {
+                    playSuccessFlash();
+                    playCorrectSound();
+                }
+
+                if (gameData.finished) {
+                    showGameOver(gameData);
+                    return;
+                }
+
+                const questRes = await fetch(`${API_BASE}/question/get/${gameData.questionId}`);
+                if (!questRes.ok) {
+                    const reason = await readErrorMessage(questRes);
+                    throw new Error(reason || "Не удалось загрузить вопрос");
+                }
+                const questData = await questRes.json();
+
+                questionTextEl.textContent = questData.questionText;
+                document.getElementById("ans1").textContent = `1) ${questData.answer1}`;
+                document.getElementById("ans2").textContent = `2) ${questData.answer2}`;
+                document.getElementById("ans3").textContent = `3) ${questData.answer3}`;
+                document.getElementById("ans4").textContent = `4) ${questData.answer4}`;
+                setMessage("Выберите ответ", "info");
+                setAnswerButtonsEnabled(true);
+            } catch (err) {
+                setMessage(`Ошибка загрузки игры: ${err.message}`, "error");
+                setAnswerButtonsEnabled(false);
+            }
+        }
+
+        async function submitAnswer(answerIndex) {
+            try {
+                setAnswerButtonsEnabled(false);
+                setMessage("Проверяем ответ...", "info");
+
+                const res = await fetch(`${API_BASE}/game/submitAnswer`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        gameId: gameId,
+                        answer: answerIndex
+                    })
+                });
+
+                if (!res.ok) {
+                    const reason = await readErrorMessage(res);
+                    throw new Error(reason || "Не удалось отправить ответ");
+                }
+
+                await refreshGame();
+            } catch (err) {
+                setMessage(`Ошибка отправки ответа: ${err.message}`, "error");
+                setAnswerButtonsEnabled(true);
+            }
+        }
+
+        function showGameOver(data) {
+            questionSectionEl.style.display = "none";
+            gameOverEl.style.display = "block";
+            setAnswerButtonsEnabled(false);
+            setMessage("Игра завершена", "success");
+
+            const finalResultEl = document.getElementById("final-result");
+            const correctAnswersEl = document.getElementById("correct-answers-result");
+            if (Number(data.payout) >= PRIZE_TABLE[PRIZE_TABLE.length - 1]) {
+                finalResultEl.textContent =
+                    `Вы заработали ${formatMoney(data.payout)}. Это максимальный выигрыш!`;
+            } else {
+                finalResultEl.textContent =
+                    `Вы заработали ${formatMoney(data.score)}. Несгораемая сумма: ${formatMoney(data.safeAmount)}. Ваш выигрыш - ${formatMoney(data.payout)}.`;
+            }
+            correctAnswersEl.textContent = `Правильных ответов: ${data.correctAnswers}`;
+
+            if (Number(data.payout) >= PRIZE_TABLE[PRIZE_TABLE.length - 1]) {
+                playWinSound();
+            } else {
+                playLoseSound();
+            }
+        }
+
+        answerButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                getAudioCtx().resume?.();
+                const answer = Number(button.dataset.answer);
+                submitAnswer(answer);
+            });
+        });
+
+        refreshGame();
+    </script>
+</body>
+</html>

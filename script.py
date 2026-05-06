@@ -1,14 +1,14 @@
 import sqlite3
 
 def main():
-    db = 'back\\src\\main\\resources\\data.db'
+    db = 'data\\data.db'
     file_name = 'Вопросы.txt'
 
     connection = sqlite3.connect(db)
     cursor = connection.cursor()
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS questions (
+        CREATE TABLE IF NOT EXISTS question (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 text TEXT NOT NULL,
                 answer1 TEXT NOT NULL,
@@ -17,6 +17,16 @@ def main():
                 answer4 TEXT NOT NULL,
                 correct_answer INTEGER NOT NULL,
                 grade INTEGER NOT NULL
+            )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS game_result (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_name TEXT NOT NULL,
+                score INTEGER NOT NULL,
+                correct_answers INTEGER NOT NULL,
+                created_at DATETIME NOT NULL
             )
     ''')
 
@@ -31,7 +41,7 @@ def main():
             correct_answer = int(parts[5])
             grade = int(parts[6])
 
-            cursor.execute('INSERT INTO questions ' + 
+            cursor.execute('INSERT INTO question ' + 
                            '(text, answer1, answer2, answer3, answer4, correct_answer, grade)' +
                             ' VALUES (?, ?, ?, ?, ?, ?, ?)', 
                             (text, answer1, answer2, answer3, answer4, correct_answer, grade))

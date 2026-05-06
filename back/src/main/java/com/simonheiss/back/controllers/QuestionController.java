@@ -1,22 +1,22 @@
 package com.simonheiss.back.controllers;
 
-import com.simonheiss.back.entity.Question;
-import com.simonheiss.back.services.QuestionService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.simonheiss.back.DTO.QuestionResponse;
+import com.simonheiss.back.usecase.QuestionUseCase;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+@AllArgsConstructor
 @RestController
-@RequestMapping("/api/questions")
+@CrossOrigin
+@RequestMapping("/api/question")
 public class QuestionController {
-    private final QuestionService questionService;
+    private final QuestionUseCase questionUseCase;
 
-    public QuestionController(QuestionService service){
-        questionService = service;
-    }
+    @GetMapping("/get/{questionId}")
+    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable String questionId){
+        QuestionResponse response = questionUseCase.getQuestionInfo(Integer.parseInt(questionId));
 
-    @GetMapping("/random")
-    public Question GetRandomQuestion(){
-        return questionService.getRandom();
+        return ResponseEntity.ok(response);
     }
 }

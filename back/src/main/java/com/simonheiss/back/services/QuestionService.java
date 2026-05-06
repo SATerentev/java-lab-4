@@ -12,7 +12,15 @@ public class QuestionService {
         this.repository = repository;
     }
 
-    public Question getRandom(){
-        return repository.getRandomQuestion();
+    public Question getNewQuestion(int grade){
+        return repository.getRandomQuestion(grade);
+    }
+
+    public Question getQuestion(int id){
+        return repository.findById(id).get();
+    }
+
+    public boolean checkAnswer(int questionId, int answer){
+        return repository.findById(questionId).get().getCorrectAnswer() == answer;
     }
 }

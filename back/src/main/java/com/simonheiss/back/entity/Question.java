@@ -13,6 +13,7 @@ import java.util.List;
 public class Question {
     @Id
     @GeneratedValue
+    @Getter
     private Integer id;
     @Getter
     private String text;

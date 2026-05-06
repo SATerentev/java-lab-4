@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Миллионер | Создать игру</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Russo+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="index-container">
+        <h1>Кто хочет стать миллионером?</h1>
+        <p class="subtitle">Создай новую игру и проверь, дойдешь ли до главного приза.</p>
+
+        <form id="createForm" class="create-form">
+            <label for="playerName">Имя игрока</label>
+            <input type="text" id="playerName" placeholder="Vasya" required>
+
+            <label for="safeAmount">Несгораемая сумма</label>
+            <input type="number" id="safeAmount" placeholder="1000000" min="0" required>
+
+            <button type="submit" id="createBtn">Создать игру</button>
+        </form>
+
+        <div id="result" class="result-card" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        const formEl = document.getElementById('createForm');
+        const resultEl = document.getElementById('result');
+        const createBtn = document.getElementById('createBtn');
+
+        formEl.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            createBtn.disabled = true;
+            createBtn.textContent = 'Создаю...';
+            
+            const data = {
+                playerName: document.getElementById('playerName').value.trim(),
+                safeAmount: parseInt(document.getElementById('safeAmount').value)
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/game/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    const reason = await res.text();
+                    throw new Error(reason || 'Ошибка создания игры');
+                }
+
+                const gameId = await res.text();
+                window.location.href = `game.html?gameId=${gameId}`;
+            } catch (err) {
+                resultEl.style.display = 'block';
+                resultEl.innerHTML = `<p class="error-text">Ошибка: ${err.message}</p>`;
+            } finally {
+                createBtn.disabled = false;
+                createBtn.textContent = 'Создать игру';
+            }
+        });
+    </script>
+</body>
+</html>
