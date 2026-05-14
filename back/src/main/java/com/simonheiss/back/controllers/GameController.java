@@ -25,9 +25,9 @@ public class GameController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/question/get/{questionId}")
-    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable String questionId){
-        QuestionResponse response = gameUseCase.getQuestionInfo(Integer.parseInt(questionId));
+    @GetMapping("/{gameId}/question/get")
+    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable String gameId){
+        QuestionResponse response = gameUseCase.getQuestionInfo(UUID.fromString(gameId));
 
         return ResponseEntity.ok(response);
     }

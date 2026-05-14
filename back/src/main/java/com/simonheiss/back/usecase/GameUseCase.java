@@ -68,7 +68,9 @@ public class GameUseCase {
         );
     }
 
-    public QuestionResponse getQuestionInfo(int questionId){
+    public QuestionResponse getQuestionInfo(UUID gameId){
+        Game game = gameService.getGame(gameId);
+        int questionId = game.getCurrentQuestionId();
         Question question = questionService.getQuestion(questionId);
 
         return new QuestionResponse(

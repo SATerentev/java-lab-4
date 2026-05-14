@@ -205,7 +205,7 @@
                     return;
                 }
 
-                const questRes = await fetch(`${API_BASE}/question/get/${gameData.questionId}`);
+                const questRes = await fetch(`${API_BASE}/game/${gameId}/question/get`);
                 if (!questRes.ok) {
                     const reason = await readErrorMessage(questRes);
                     throw new Error(reason || "Не удалось загрузить вопрос");
