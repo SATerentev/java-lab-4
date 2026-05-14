@@ -46,37 +46,14 @@ public class Question {
         this.grade = grade;
     }
 
-    public void setText(String text){
-        validateText(text);
-        this.text = text;
-    }
-
-    public void setAnswers(List<String> answers){
-        validateAnswers(answers);
-        answer1 = answers.get(0);
-        answer2 = answers.get(1);
-        answer3 = answers.get(2);
-        answer4 = answers.get(3);
-    }
-
     public List<String> getAnswers(){
-        List<String> answers = new ArrayList<String>();
+        List<String> answers = new ArrayList<>();
         answers.add(answer1);
         answers.add(answer2);
         answers.add(answer3);
         answers.add(answer4);
 
         return answers;
-    }
-
-    public void setCorrectAnswer(int answer){
-        validateCorrectAnswer(answer);
-        correctAnswer = answer;
-    }
-
-    public void setGrade(int grade){
-        validateGrade(grade);
-        this.grade = grade;
     }
 
     private void validateText(String text){

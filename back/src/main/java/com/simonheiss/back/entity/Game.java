@@ -22,6 +22,8 @@ public class Game {
     @Getter
     private int correctAnswers;
     @Getter
+    private int usedHintsCount;
+    @Getter
     private int finalPayout;
 
     public Game(String playerName, int safeAmount, int currentQuestionId){
@@ -36,6 +38,7 @@ public class Game {
         this.currentQuestionId = currentQuestionId;
         currentScore = 0;
         correctAnswers = 0;
+        usedHintsCount = 0;
         finalPayout = 0;
     }
 

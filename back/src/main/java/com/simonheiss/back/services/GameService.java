@@ -2,7 +2,6 @@ package com.simonheiss.back.services;
 
 import com.simonheiss.back.entity.Game;
 import com.simonheiss.back.entity.Question;
-import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
