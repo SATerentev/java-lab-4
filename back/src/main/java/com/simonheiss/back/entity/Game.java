@@ -66,6 +66,14 @@ public class Game {
         finalPayout = payout;
     }
 
+    public void useHint(){
+        usedHintsCount++;
+
+        if (usedHintsCount > 4){
+            throw new IllegalStateException("Нельзя использовать больше 4 подсказок.");
+        }
+    }
+
     private void validatePlayerName(String playerName){
         if (playerName == null || playerName.isEmpty())
             throw new IllegalArgumentException("Имя игрока не может быть пустым.");

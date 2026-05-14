@@ -3,6 +3,7 @@ package com.simonheiss.back.controllers;
 import com.simonheiss.back.DTO.AnswerRequest;
 import com.simonheiss.back.DTO.CreateGameRequest;
 import com.simonheiss.back.DTO.GameResponse;
+import com.simonheiss.back.DTO.QuestionResponse;
 import com.simonheiss.back.usecase.GameUseCase;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,14 @@ public class GameController {
 
     @GetMapping("/{gameId}")
     public ResponseEntity<GameResponse> getGame(@PathVariable String gameId){
-        System.out.println("/api/game/id  -   " + gameId);
         GameResponse response = gameUseCase.getGameInfo(UUID.fromString(gameId));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/question/get/{questionId}")
+    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable String questionId){
+        QuestionResponse response = gameUseCase.getQuestionInfo(Integer.parseInt(questionId));
 
         return ResponseEntity.ok(response);
     }

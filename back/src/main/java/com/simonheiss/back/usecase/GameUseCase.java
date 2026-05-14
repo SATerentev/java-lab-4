@@ -1,6 +1,7 @@
 package com.simonheiss.back.usecase;
 
 import com.simonheiss.back.DTO.GameResponse;
+import com.simonheiss.back.DTO.QuestionResponse;
 import com.simonheiss.back.entity.Game;
 import com.simonheiss.back.entity.GameResult;
 import com.simonheiss.back.entity.Question;
@@ -64,6 +65,18 @@ public class GameUseCase {
                 payout,
                 game.getSafeAmount(),
                 game.getCorrectAnswers()
+        );
+    }
+
+    public QuestionResponse getQuestionInfo(int questionId){
+        Question question = questionService.getQuestion(questionId);
+
+        return new QuestionResponse(
+                question.getText(),
+                question.getAnswers().get(0),
+                question.getAnswers().get(1),
+                question.getAnswers().get(2),
+                question.getAnswers().get(3)
         );
     }
 
