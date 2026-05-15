@@ -2,22 +2,18 @@ package com.simonheiss.back.DTO;
 
 import com.simonheiss.back.entity.Hints;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.UUID;
 
 @AllArgsConstructor
-@NoArgsConstructor
-public class GameResponse {
-    public boolean finished;
-    public UUID gameId;
-    public int questionId;
+public class GameInfo {
+    public boolean isActive;
     public String playerName;
-    public int score;
-    public int payout;
     public int safeAmount;
+    public int currentQuestionId;
+    public int currentScore;
     public int correctAnswers;
     public List<Hints> usedHints;
+    public boolean isMakeMistakeActive;
     public int finalPayout;
 }

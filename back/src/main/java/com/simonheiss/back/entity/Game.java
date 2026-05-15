@@ -2,9 +2,11 @@ package com.simonheiss.back.entity;
 
 import lombok.Getter;
 
-import java.util.UUID;
+import java.util.*;
 
 public class Game {
+    private final int MAX_HINTS_COUNT = 4;
+
     @Getter
     private UUID id;
     @Getter
@@ -21,8 +23,9 @@ public class Game {
     private int currentScore;
     @Getter
     private int correctAnswers;
+    private List<Hints> usedHints;
     @Getter
-    private int usedHintsCount;
+    private boolean isMakeMistakeActive;
     @Getter
     private int finalPayout;
 
@@ -38,8 +41,13 @@ public class Game {
         this.currentQuestionId = currentQuestionId;
         currentScore = 0;
         correctAnswers = 0;
-        usedHintsCount = 0;
+        usedHints = new ArrayList<>();
+        isMakeMistakeActive = false;
         finalPayout = 0;
+    }
+
+    public List<Hints> getUsedHints(){
+        return List.copyOf(usedHints);
     }
 
     public void finish(){
@@ -66,12 +74,28 @@ public class Game {
         finalPayout = payout;
     }
 
-    public void useHint(){
-        usedHintsCount++;
+    public void useHint(Hints type){
+        if (usedHints.contains(type))
+            throw new IllegalArgumentException("Такая подсказка уже использована.");
 
-        if (usedHintsCount > 4){
-            throw new IllegalStateException("Нельзя использовать больше 4 подсказок.");
-        }
+        if (usedHints.size() >= MAX_HINTS_COUNT)
+            throw new IllegalArgumentException("Нельзя использовать больше " + MAX_HINTS_COUNT + " подсказок за игру.");
+
+        usedHints.add(type);
+    }
+
+    public void activateMakeMistake(){
+        if (usedHints.contains(Hints.MakeMistake))
+            throw new IllegalStateException("Такая подсказка уже использована.");
+
+        isMakeMistakeActive = true;
+    }
+
+    public void deactivateMakeMistake(){
+        if (!isMakeMistakeActive)
+            throw new IllegalStateException("Ошибка при деактивации MakeMistakeHint: Подсказка не была активирована.");
+
+        isMakeMistakeActive = false;
     }
 
     private void validatePlayerName(String playerName){
