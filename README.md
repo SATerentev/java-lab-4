@@ -1,6 +1,8 @@
 # Кто хочет стать миллионером
 
-Учебный проект на Java с backend и frontend частью.
+Лабораторная работа 4. Программирование на языке Java.
+
+---
 
 ## Стек технологий
 
@@ -30,19 +32,7 @@ python script.py
 
 ### 3. Запуск Frontend
 Открыть файл
-```azure
+```bash
 front/index.html
 ```
 в браузере.
-
----
-
-## Структура проекта
-```azure
-project/
-│
-├── front/          # Frontend часть
-├── src/            # Backend код
-├── script.py       # Создание БД
-└── README.md
-```
