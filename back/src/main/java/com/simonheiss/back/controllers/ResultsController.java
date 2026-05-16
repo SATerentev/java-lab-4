@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
+@CrossOrigin
 @RequestMapping("/api/results")
 public class ResultsController {
     private final ResultUseCase resultUseCase;

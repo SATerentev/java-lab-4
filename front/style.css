@@ -24,15 +24,13 @@ body {
 }
 
 h1,
-#prize-ladder h3 {
+#prize-ladder h3,
+.top-results-widget h3 {
     font-family: "Russo One", "Manrope", sans-serif;
     letter-spacing: 0.3px;
 }
 
-#index-container,
-#game-container {
-    width: min(760px, 92vw);
-    margin-top: 24px;
+#index-container {
     background: rgba(10, 18, 58, 0.9);
     border: 1px solid rgba(89, 117, 255, 0.5);
     border-radius: 16px;
@@ -45,13 +43,20 @@ h1,
 #game-container {
     width: 100%;
     margin-top: 0;
+    background: rgba(10, 18, 58, 0.9);
+    border: 1px solid rgba(89, 117, 255, 0.5);
+    border-radius: 16px;
+    padding: 22px;
+    box-sizing: border-box;
+    box-shadow: 0 16px 40px rgba(2, 6, 24, 0.45);
+    backdrop-filter: blur(4px);
 }
 
 .game-layout {
     width: min(1100px, 95vw);
     margin-top: 24px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-columns: 120px minmax(0, 1fr) 280px;
     gap: 18px;
     align-items: start;
 }
@@ -219,12 +224,285 @@ h1,
     }
 }
 
+.index-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 18px;
+    width: min(1100px, 95vw);
+    margin-top: 24px;
+    align-items: start;
+}
+
+.top-results-widget {
+    background: rgba(10, 18, 58, 0.9);
+    border: 1px solid rgba(89, 117, 255, 0.5);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 16px 40px rgba(2, 6, 24, 0.35);
+    height: fit-content;
+}
+
+.top-results-widget h3 {
+    margin-top: 0;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.top-results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.top-result-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(6, 12, 40, 0.65);
+    color: #c8d4ff;
+    font-size: 13px;
+}
+
+.top-result-item.empty {
+    justify-content: center;
+    text-align: center;
+    color: #8899cc;
+}
+
+.top-result-item .rank {
+    font-weight: 700;
+    color: #81a4ff;
+    min-width: 32px;
+}
+
+.top-result-item .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+#index-container {
+    width: 100%;
+    margin: 0;
+}
+
+.hints-panel {
+    background: rgba(10, 18, 58, 0.9);
+    border: 1px solid rgba(89, 117, 255, 0.5);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 16px 40px rgba(2, 6, 24, 0.35);
+    height: fit-content;
+    position: sticky;
+    top: 24px;
+}
+
+.hints-panel h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-family: "Russo One", "Manrope", sans-serif;
+    letter-spacing: 0.3px;
+    text-align: center;
+    color: #81a4ff;
+}
+
+.hints-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.hint-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 6px;
+    border: 1px solid rgba(89, 117, 255, 0.5);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(63, 92, 224, 0.6) 0%, rgba(47, 70, 180, 0.6) 100%);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all .15s ease;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: "Manrope", sans-serif;
+}
+
+.hint-btn:hover:enabled {
+    background: linear-gradient(135deg, rgba(86, 113, 239, 0.8) 0%, rgba(59, 84, 201, 0.8) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(86, 113, 239, 0.3);
+}
+
+.hint-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.hint-icon {
+    font-size: 20px;
+}
+
+.hint-name {
+    line-height: 1.1;
+    text-align: center;
+}
+
+.ans-btn.disabled-answer {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-window {
+    background: rgba(10, 18, 58, 0.95);
+    border: 2px solid rgba(89, 117, 255, 0.7);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(2, 6, 24, 0.8);
+    backdrop-filter: blur(8px);
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #81a4ff;
+    font-size: 32px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #ffffff;
+}
+
+.modal-header {
+    font-family: "Russo One", "Manrope", sans-serif;
+    font-size: 20px;
+    color: #81a4ff;
+    margin-bottom: 16px;
+    margin-top: 0;
+}
+
+.modal-body {
+    color: #c8d4ff;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.modal-action {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #3f5ce0 0%, #2f46b4 100%);
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.12s ease;
+}
+
+.modal-btn:hover {
+    background: linear-gradient(90deg, #5671ef 0%, #3b54c9 100%);
+    transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 @media (max-width: 900px) {
+    .index-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .top-results-widget {
+        order: -1;
+    }
+
     .game-layout {
         grid-template-columns: 1fr;
     }
 
     #prize-ladder {
         order: -1;
+    }
+
+    #hints-panel {
+        order: -1;
+    }
+
+    .hints-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+    }
+
+    .hint-btn {
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+
+    .hint-icon {
+        font-size: 16px;
+    }
+
+    .hints-panel {
+        position: static;
+        sticky: none;
+        top: auto;
     }
 }

@@ -11,6 +11,32 @@
 <body>
     <div id="success-flash" aria-hidden="true"></div>
     <div class="game-layout">
+        <div id="hints-panel" class="hints-panel">
+            <h3>Подсказки</h3>
+            <div class="hints-grid">
+                <button id="hint-friend-call" class="hint-btn" title="Звонок другу">
+                    <span class="hint-icon">☎️</span>
+                    <span class="hint-name">Звонок<br>другу</span>
+                </button>
+                <button id="hint-ask-audience" class="hint-btn" title="Помощь зала">
+                    <span class="hint-icon">👥</span>
+                    <span class="hint-name">Помощь<br>зала</span>
+                </button>
+                <button id="hint-fifty-fifty" class="hint-btn" title="50 на 50">
+                    <span class="hint-icon">5️⃣0️⃣</span>
+                    <span class="hint-name">50<br>на 50</span>
+                </button>
+                <button id="hint-change-question" class="hint-btn" title="Поменять вопрос">
+                    <span class="hint-icon">🔄</span>
+                    <span class="hint-name">Поменять<br>вопрос</span>
+                </button>
+                <button id="hint-make-mistake" class="hint-btn" title="Право на ошибку">
+                    <span class="hint-icon">❌</span>
+                    <span class="hint-name">Право на<br>ошибку</span>
+                </button>
+            </div>
+        </div>
+
         <div id="game-container">
             <h1>Кто хочет стать миллионером?</h1>
             
@@ -46,6 +72,14 @@
         </div>
     </div>
 
+    <!-- Модальные окна для подсказок -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-window">
+            <button class="modal-close">&times;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = "http://localhost:8080/api";
         const PRIZE_TABLE = [
@@ -74,8 +108,14 @@
         const questionTextEl = document.getElementById("questionText");
         const answerButtons = Array.from(document.querySelectorAll(".ans-btn"));
         const prizeListEl = document.getElementById("prize-list");
+        const modalOverlay = document.getElementById("modal-overlay");
+        const modalContent = document.getElementById("modal-content");
+        const modalClose = document.querySelector(".modal-close");
+        
         let previousScore = null;
         let audioCtx = null;
+        let usedHints = new Set();
+        let hiddenAnswers = new Set();
 
         function formatMoney(value) {
             return Number(value).toLocaleString("ru-RU");
@@ -164,7 +204,9 @@
 
         function setAnswerButtonsEnabled(enabled) {
             answerButtons.forEach((button) => {
-                button.disabled = !enabled;
+                if (!hiddenAnswers.has(button.id)) {
+                    button.disabled = !enabled;
+                }
             });
         }
 
@@ -175,6 +217,48 @@
                 return "Неизвестная ошибка";
             }
         }
+
+        function updateHintButtons(gameData) {
+            usedHints.clear();
+            if (gameData.usedHints) {
+                gameData.usedHints.forEach(hint => usedHints.add(hint));
+            }
+
+            const maxHintsUsed = usedHints.size >= 4;
+            
+            document.getElementById("hint-friend-call").disabled = maxHintsUsed || usedHints.has("FriendCall");
+            document.getElementById("hint-ask-audience").disabled = maxHintsUsed || usedHints.has("AskAudience");
+            document.getElementById("hint-fifty-fifty").disabled = maxHintsUsed || usedHints.has("FiftyFifty");
+            document.getElementById("hint-change-question").disabled = maxHintsUsed || usedHints.has("ChangeQuestion");
+            document.getElementById("hint-make-mistake").disabled = maxHintsUsed || usedHints.has("MakeMistake");
+        }
+
+        function showModal(title, content, actionText = "Ок") {
+            const contentHTML = content
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line)
+                .join('<br>');
+            
+            modalContent.innerHTML = `
+                <h3 class="modal-header">${title}</h3>
+                <p class="modal-body">${contentHTML}</p>
+                <div class="modal-action">
+                    <button class="modal-btn">${actionText}</button>
+                </div>
+            `;
+            modalOverlay.style.display = "flex";
+            modalOverlay.querySelector(".modal-btn").focus();
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = "none";
+        }
+
+        modalClose.addEventListener("click", closeModal);
+        modalOverlay.addEventListener("click", (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
 
         if (!gameId) {
             alert("ID игры не найден");
@@ -193,6 +277,9 @@
                 document.getElementById("playerName").textContent = gameData.playerName;
                 document.getElementById("score").textContent = formatMoney(gameData.score);
                 document.getElementById("safeAmount").textContent = formatMoney(gameData.safeAmount);
+                
+                updateHintButtons(gameData);
+                
                 const oldScore = previousScore;
                 renderPrizeLadder(gameData.score);
                 if (oldScore !== null && Number(gameData.score) > oldScore) {
@@ -217,6 +304,10 @@
                 document.getElementById("ans2").textContent = `2) ${questData.answer2}`;
                 document.getElementById("ans3").textContent = `3) ${questData.answer3}`;
                 document.getElementById("ans4").textContent = `4) ${questData.answer4}`;
+                
+                hiddenAnswers.clear();
+                answerButtons.forEach(btn => btn.classList.remove("disabled-answer"));
+                
                 setMessage("Выберите ответ", "info");
                 setAnswerButtonsEnabled(true);
             } catch (err) {
@@ -244,7 +335,14 @@
                     throw new Error(reason || "Не удалось отправить ответ");
                 }
 
-                await refreshGame();
+                const gameData = await res.json();
+                updateHintButtons(gameData);
+                
+                if (gameData.finished) {
+                    showGameOver(gameData);
+                } else {
+                    await refreshGame();
+                }
             } catch (err) {
                 setMessage(`Ошибка отправки ответа: ${err.message}`, "error");
                 setAnswerButtonsEnabled(true);
@@ -275,12 +373,108 @@
             }
         }
 
+        async function useHint(hintName) {
+            try {
+                setAnswerButtonsEnabled(false);
+                setMessage("Используем подсказку...", "info");
+
+                const res = await fetch(`${API_BASE}/game/${gameId}/useHint`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ HintName: hintName })
+                });
+
+                if (!res.ok) {
+                    const reason = await readErrorMessage(res);
+                    throw new Error(reason || "Не удалось использовать подсказку");
+                }
+
+                const response = await res.json();
+
+                if (hintName === "FriendCall") {
+                    showModal("☎️ Звонок другу", `Друг сказал:\n${response.hintText}`);
+                } else if (hintName === "AskAudience") {
+                    showModal("👥 Помощь зала", `Зал говорит:\n${response.hintText}`);
+                } else if (hintName === "FiftyFifty") {
+                    const incorrect1 = response.firstIncorrectAnswer;
+                    const incorrect2 = response.secondIncorrectAnswer;
+                    
+                    answerButtons.forEach(btn => {
+                        const answerText = btn.textContent.substring(3).trim();
+                        if (answerText === incorrect1 || answerText === incorrect2) {
+                            btn.classList.add("disabled-answer");
+                            btn.disabled = true;
+                            hiddenAnswers.add(btn.id);
+                        }
+                    });
+                    showModal("5️⃣0️⃣ 50 на 50", "Два неправильных ответа удалены!");
+                } else if (hintName === "ChangeQuestion") {
+                    const newQuestion = response.newQuestion;
+                    questionTextEl.textContent = newQuestion.questionText;
+                    document.getElementById("ans1").textContent = `1) ${newQuestion.answer1}`;
+                    document.getElementById("ans2").textContent = `2) ${newQuestion.answer2}`;
+                    document.getElementById("ans3").textContent = `3) ${newQuestion.answer3}`;
+                    document.getElementById("ans4").textContent = `4) ${newQuestion.answer4}`;
+                    
+                    hiddenAnswers.clear();
+                    answerButtons.forEach(btn => btn.classList.remove("disabled-answer"));
+                    
+                    showModal("🔄 Вопрос изменен", "Вам предоставлен новый вопрос!");
+                }
+
+                const gameRes = await fetch(`${API_BASE}/game/${gameId}`);
+                if (gameRes.ok) {
+                    const gameData = await gameRes.json();
+                    updateHintButtons(gameData);
+                }
+                
+                setMessage("Выберите ответ", "info");
+                setAnswerButtonsEnabled(true);
+            } catch (err) {
+                setMessage(`Ошибка подсказки: ${err.message}`, "error");
+                setAnswerButtonsEnabled(true);
+            }
+        }
+
         answerButtons.forEach((button) => {
             button.addEventListener("click", () => {
-                getAudioCtx().resume?.();
-                const answer = Number(button.dataset.answer);
-                submitAnswer(answer);
+                if (!button.disabled) {
+                    getAudioCtx().resume?.();
+                    const answer = Number(button.dataset.answer);
+                    submitAnswer(answer);
+                }
             });
+        });
+
+        document.getElementById("hint-friend-call").addEventListener("click", () => {
+            getAudioCtx().resume?.();
+            useHint("FriendCall");
+        });
+
+        document.getElementById("hint-ask-audience").addEventListener("click", () => {
+            getAudioCtx().resume?.();
+            useHint("AskAudience");
+        });
+
+        document.getElementById("hint-fifty-fifty").addEventListener("click", () => {
+            getAudioCtx().resume?.();
+            useHint("FiftyFifty");
+        });
+
+        document.getElementById("hint-change-question").addEventListener("click", () => {
+            getAudioCtx().resume?.();
+            useHint("ChangeQuestion");
+        });
+
+        document.getElementById("hint-make-mistake").addEventListener("click", () => {
+            getAudioCtx().resume?.();
+            useHint("MakeMistake");
+        });
+
+        modalContent.addEventListener("click", (e) => {
+            if (e.target.classList.contains("modal-btn")) {
+                closeModal();
+            }
         });
 
         refreshGame();

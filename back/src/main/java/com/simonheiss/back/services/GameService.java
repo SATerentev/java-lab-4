@@ -92,7 +92,7 @@ public class GameService {
     public void useFriendCall(UUID gameId){
         Game game = getGameAndValidate(gameId);
 
-        if (game.getUsedHints().contains(Hints.AskAudience))
+        if (game.getUsedHints().contains(Hints.FriendCall))
             throw new IllegalStateException("Подсказка уже была использована.");
 
         game.useHint(Hints.FriendCall);
